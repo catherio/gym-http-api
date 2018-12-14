@@ -3,3 +3,4 @@ numpy==1.11.1rc1
 gym==0.7.4
 requests==2.11.0
 pytest
+gym-retro

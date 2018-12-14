@@ -2,6 +2,7 @@
 from flask import Flask, request, jsonify
 import uuid
 import gym
+import retro
 import numpy as np
 import six
 import argparse
@@ -41,9 +42,12 @@ class Envs(object):
         except KeyError:
             raise InvalidUsage('Instance_id {} unknown'.format(instance_id))
 
-    def create(self, env_id, seed=None):
+    def create(self, env_id, seed=None, **kwargs):
         try:
-            env = gym.make(env_id)
+            try:
+                env = retro.make(env_id, **kwargs)
+            except FileNotFoundError:
+                env = gym.make(env_id, **kwargs)
             if seed:
                 env.seed(seed)
         except gym.error.Error:
