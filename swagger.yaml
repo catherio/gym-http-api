@@ -1,0 +1,331 @@
+swagger: '2.0'
+info:
+  title: 'OpenAI gym-http-api'
+  version: 1.0.0
+  description: 'A local REST API to the [gym](https://github.com/openai/gym) open-source library, allowing development in languages other than python.'
+  license:
+    name: MIT
+    url: 'https://mit-license.org/'
+externalDocs:
+  description: 'Further documentation can be found at Github.'
+  url: 'https://github.com/openai/gym-http-api'
+host: '127.0.0.1:5000'
+basePath: /v1
+schemes:
+  - http
+  - https
+consumes:
+  - application/json
+produces:
+  - application/json
+parameters:
+  instance_id:
+    name: instance_id
+    in: path
+    description: 'a short identifier (such as `3c657dbc`) for the environment instance'
+    required: true
+    type: string
+    x-oad-type: parameter
+responses:
+  info:
+    description: 'a dict containing `name` (such as `Discrete`), and additional dimensional info (such as `n`) which varies from space to space'
+    schema:
+      x-oad-type: object
+      type: object
+      properties:
+        name:
+          x-oad-type: string
+          type: string
+    x-oad-type: response
+paths:
+  /envs/:
+    get:
+      operationId: env_list_all
+      summary: 'List all environments running on the server'
+      responses:
+        '200':
+          description: 'envs: dict mapping instance_id to env_id (e.g. `{"3c657dbc": "CartPole-v0"}`) for every env on the server'
+          x-oad-type: response
+    post:
+      operationId: env_create
+      summary: 'Create an instance of the specified environment'
+      responses:
+        '200':
+          description: 'instance_id: a short identifier (such as `3c657dbc`) for the created environment instance. The instance_id is used in future API calls to identify the environment to be manipulated'
+          schema:
+            x-oad-type: string
+            type: string
+          x-oad-type: response
+      parameters:
+        -
+          name: env_id
+          in: body
+          description: 'gym environment ID string, such as `CartPole-v0`'
+          required: true
+          schema:
+            x-oad-type: string
+            type: string
+          x-oad-type: parameter
+        -
+          name: seed
+          in: body
+          description: 'set the seed for this env''s random number generator(s).'
+          required: true
+          schema:
+            x-oad-type: integer
+            type: integer
+            format: int32
+          x-oad-type: parameter
+    x-oad-type: operation
+  '/envs/{instance_id}/reset/':
+    post:
+      operationId: env_reset
+      summary: 'Reset the state of the environment and return an initial observation.'
+      responses:
+        '200':
+          description: 'observation: the initial observation of the space'
+          x-oad-type: response
+      parameters:
+        -
+          name: instance_id
+          in: path
+          description: 'a short identifier (such as `3c657dbc`) for the environment instance'
+          required: true
+          type: string
+          x-oad-type: parameter
+    x-oad-type: operation
+  '/envs/{instance_id}/step/':
+    post:
+      operationId: env_step
+      summary: 'Run one timestep of the environment''s dynamics.'
+      responses:
+        '200':
+          description: 'return step result for the given action'
+          schema:
+            x-oad-type: object
+            type: object
+            properties:
+              observation:
+                x-oad-type: object
+                type: object
+                title: observation
+                description: 'agent''s observation of the current environment'
+              reward:
+                x-oad-type: number
+                type: number
+                title: reward
+                description: 'amount of reward returned after previous action'
+                format: float
+              done:
+                x-oad-type: boolean
+                type: boolean
+                title: done
+                description: 'whether the episode has ended'
+              info:
+                x-oad-type: object
+                type: object
+                title: info
+                description: 'a dict containing auxiliary diagnostic information'
+          x-oad-type: response
+      parameters:
+        -
+          name: instance_id
+          in: path
+          description: 'a short identifier (such as `3c657dbc`) for the environment instance'
+          required: true
+          type: string
+          x-oad-type: parameter
+        -
+          name: action
+          in: body
+          description: 'an action to take in the environment'
+          required: true
+          schema:
+            x-oad-type: array
+            type: array
+            items:
+              x-oad-type: integer
+              type: integer
+              format: int32
+          x-oad-type: parameter
+    x-oad-type: operation
+  '/envs/{instance_id}/action_space/':
+    get:
+      operationId: env_action_space_info
+      summary: 'Get information (name and dimensions/bounds) of the env''s action_space'
+      responses:
+        '200':
+          $ref: '#/responses/info'
+          x-oad-type: reference
+      parameters:
+        -
+          name: instance_id
+          in: path
+          description: 'a short identifier (such as `3c657dbc`) for the environment instance'
+          required: true
+          type: string
+          x-oad-type: parameter
+    x-oad-type: operation
+  '/envs/{instance_id}/action_space/sample':
+    get:
+      operationId: env_action_space_sample
+      summary: 'Get a sample from the env''s action_space'
+      responses:
+        '200':
+          description: 'action: a randomly sampled element belonging to the action_space'
+          x-oad-type: response
+      parameters:
+        -
+          name: instance_id
+          in: path
+          description: 'a short identifier (such as `3c657dbc`) for the environment instance'
+          required: true
+          type: string
+          x-oad-type: parameter
+    x-oad-type: operation
+  '/envs/{instance_id}/action_space/contains/{x}/':
+    get:
+      operationId: env_action_space_contains
+      summary: 'Assess that value is a member of the env''s action_space'
+      responses:
+        '200':
+          description: 'member: whether the value passed as parameter belongs to the action_space'
+          schema:
+            x-oad-type: boolean
+            type: boolean
+          x-oad-type: response
+      parameters:
+        -
+          name: instance_id
+          in: path
+          description: 'a short identifier (such as `3c657dbc`) for the environment instance'
+          required: true
+          type: string
+          x-oad-type: parameter
+        -
+          name: x
+          in: path
+          description: 'the value to be checked as member'
+          required: true
+          type: string
+          x-oad-type: parameter
+    x-oad-type: operation
+  '/envs/{instance_id}/observation_space/':
+    get:
+      operationId: env_observation_space_info
+      summary: 'Get information (name and dimensions/bounds) of the env''s observation_space'
+      responses:
+        '200':
+          $ref: '#/responses/info'
+          x-oad-type: reference
+      parameters:
+        -
+          name: instance_id
+          in: path
+          description: 'a short identifier (such as `3c657dbc`) for the environment instance'
+          required: true
+          type: string
+          x-oad-type: parameter
+    x-oad-type: operation
+  '/envs/{instance_id}/monitor/start/':
+    post:
+      operationId: env_monitor_start
+      summary: 'Start monitoring.'
+      responses:
+        '204':
+          description: 'empty response'
+          x-oad-type: response
+      parameters:
+        -
+          name: instance_id
+          in: path
+          description: 'a short identifier (such as `3c657dbc`) for the environment instance'
+          required: true
+          type: string
+          x-oad-type: parameter
+        -
+          name: force
+          in: body
+          description: 'Clear out existing training data from this directory (by deleting every file prefixed with "openaigym.")'
+          required: true
+          schema:
+            x-oad-type: boolean
+            type: boolean
+            default: 'false'
+          x-oad-type: parameter
+        -
+          name: resume
+          in: path
+          description: 'Retain the training data already in this directory, which will be merged with our new data'
+          required: true
+          type: boolean
+          enum:
+            - 'false'
+          x-oad-type: parameter
+    x-oad-type: operation
+  '/envs/{instance_id}/monitor/close/':
+    post:
+      operationId: env_monitor_close
+      summary: 'Flush all monitor data to disk.'
+      responses:
+        '204':
+          description: 'empty response'
+          x-oad-type: response
+      parameters:
+        -
+          name: instance_id
+          in: path
+          description: 'a short identifier (such as `3c657dbc`) for the environment instance'
+          required: true
+          type: string
+          x-oad-type: parameter
+    x-oad-type: operation
+  /upload/:
+    post:
+      operationId: upload
+      summary: 'Upload the results of training (as automatically recorded by your env''s monitor) to OpenAI Gym.'
+      responses:
+        '204':
+          description: 'empty response'
+          x-oad-type: response
+      parameters:
+        -
+          name: training_dir
+          in: body
+          description: 'A directory containing the results of a training run.'
+          required: true
+          schema:
+            x-oad-type: string
+            type: string
+          x-oad-type: parameter
+        -
+          name: api_key
+          in: body
+          description: 'Your OpenAI API key'
+          required: true
+          schema:
+            x-oad-type: string
+            type: string
+          x-oad-type: parameter
+        -
+          name: algorithm_id
+          in: path
+          description: 'An arbitrary string indicating the paricular version of the algorithm (including choices of parameters) you are running.'
+          required: true
+          type: string
+          x-oad-type: parameter
+    x-oad-type: operation
+  /shutdown/:
+    post:
+      operationId: shutdown
+      summary: 'Request a server shutdown - currently used by the integration tests to repeatedly create and destroy fresh copies of the server running in a separate thread'
+      responses:
+        '200':
+          description: 'affirm shutdown'
+          schema:
+            x-oad-type: string
+            type: string
+            enum:
+              - 'Server shutting down'
+          x-oad-type: response
+    x-oad-type: operation
