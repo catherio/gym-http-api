@@ -124,6 +124,10 @@ class Envs(object):
             info['matrix'] = [((float(x) if x != -np.inf else -1e100) if x != +np.inf else +1e100) for x in np.array(space.matrix).flatten()]
         return info
 
+    def get_spec(self, instance_id):
+        env = self._lookup_env(instance_id)
+        return env.spec
+
     def monitor_start(self, instance_id, directory, force, resume, video_callable):
         env = self._lookup_env(instance_id)
         if video_callable == False:
@@ -338,6 +342,20 @@ def env_observation_space_info(instance_id):
     """
     info = envs.get_observation_space_info(instance_id)
     return jsonify(info = info)
+
+@app.route('/v1/envs/<instance_id>/spec/', methods=['GET'])
+def env_spec(instance_id):
+    """
+    Get an env's spec.
+
+    Parameters:
+        - instance_id: a short identifier (such as '3c657dbc')
+        for the environment instance
+    Returns:
+        - spec: an EnvSpec.
+    """
+    spec = envs.get_spec(instance_id)
+    return jsonify(spec = vars(spec))
 
 @app.route('/v1/envs/<instance_id>/monitor/start/', methods=['POST'])
 def env_monitor_start(instance_id):
