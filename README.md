@@ -99,6 +99,20 @@ API specification
     additional dimensional info (such as 'n') which varies from
     space to space
 
+  * GET `/v1/envs/<instance_id>/action_space/sample`
+      * Get a sample from the env's action_space
+      * param: `instance_id` -- a short identifier (such as '3c657dbc') for
+    the environment instance
+      * returns: `action` -- a randomly sampled element belonging to the
+    action_space
+
+  * GET `/v1/envs/<instance_id>/action_space/contains/<x>`
+      * Assess that value is a member of the env's action_space
+      * param: `instance_id` -- a short identifier (such as '3c657dbc')
+    for the environment instance
+      * returns: `member` -- whether the value passed as parameter belongs to
+    the action_space
+
   * GET `/v1/envs/<instance_id>/observation_space/`
       * Get information (name and dimensions/bounds) of the env's
         `observation_space`
@@ -127,7 +141,7 @@ API specification
         for the environment instance
 
   * POST `/v1/upload/`
-      * Flush all monitor data to disk
+      * Upload the results of training (as automatically recorded by your env's monitor) to OpenAI Gym.
       * param: `training_dir` -- A directory containing the results of a
         training run.
       * param: `api_key` -- Your OpenAI API key
